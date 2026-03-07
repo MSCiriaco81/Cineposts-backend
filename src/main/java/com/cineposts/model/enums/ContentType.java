@@ -1,0 +1,13 @@
+package com.cineposts.model.enums;
+
+public enum ContentType {
+    TRIVIA,
+    PERSON_BIRTHDAY,
+    MOVIE_ANNIVERSARY,
+    SERIES_ANNIVERSARY,
+    TV_SHOW_ANNIVERSARY,
+    RELEASE_REMINDER,
+    BEHIND_THE_SCENES,
+    COMPARISON,
+    RECOMMENDATION
+}

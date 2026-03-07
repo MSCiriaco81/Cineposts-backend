@@ -1,0 +1,25 @@
+# Compilação
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Maven wrapper (opcional — remova se quiser versionar o mvnw)
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# Logs
+*.log
+logs/
+
+# Variáveis de ambiente e segredos
+.env
+application-local.properties
+application-prod.properties
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

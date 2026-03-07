@@ -1,0 +1,56 @@
+name: CinePosts Backend CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build
+        run: mvn clean package -DskipTests
+        env:
+          SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/cineposts_test
+          JWT_SECRET: ci-test-secret-key-must-be-at-least-256-bits-long-for-hs256
+          JWT_EXPIRATION: 86400000
+
+      - name: Testes
+        run: mvn test
+        env:
+          SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/cineposts_test
+          JWT_SECRET: ci-test-secret-key-must-be-at-least-256-bits-long-for-hs256
+          JWT_EXPIRATION: 86400000
+
+      - name: Upload relatório de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+          retention-days: 7
