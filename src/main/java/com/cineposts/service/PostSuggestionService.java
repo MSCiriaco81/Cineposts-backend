@@ -95,6 +95,7 @@ public class PostSuggestionService {
                 .caption(s.getCaption())
                 .hashtags(s.getHashtags())
                 .cta(s.getCta())
+                .images(s.getImages())
                 .createdBy(s.getCreatedBy())
                 .createdByUsername(s.getCreatedByUsername())
                 .status(s.getStatus())

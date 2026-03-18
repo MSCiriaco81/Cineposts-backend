@@ -1,10 +1,11 @@
 package com.cineposts.controller;
 
 import com.cineposts.dto.response.PostSuggestionResponse;
+import com.cineposts.model.ImageAsset;
 import com.cineposts.model.enums.Platform;
 import com.cineposts.model.enums.SuggestionStatus;
+import com.cineposts.service.PostSuggestionImageService;
 import com.cineposts.service.PostSuggestionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -28,9 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PostSuggestionControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
 
     @MockBean private PostSuggestionService postSuggestionService;
+        @MockBean private PostSuggestionImageService postSuggestionImageService;
 
     private PostSuggestionResponse buildSuggestion(Platform platform) {
         PostSuggestionResponse r = new PostSuggestionResponse();
@@ -41,6 +43,14 @@ class PostSuggestionControllerTest {
         r.setCaption("Caption de teste");
         r.setHashtags(List.of("#cinema", "#teste"));
         r.setCta("Comentem abaixo!");
+        r.setImages(List.of(ImageAsset.builder()
+                .url("https://fake-storage.cineposts.dev/cineposts/demo.png")
+                .publicId("cineposts/demo")
+                .format("png")
+                .width(1080)
+                .height(1080)
+                .sizeKb(321.45)
+                .build()));
         r.setStatus(SuggestionStatus.DRAFT);
         r.setCreatedByUsername("joao");
         return r;
@@ -111,5 +121,39 @@ class PostSuggestionControllerTest {
         mockMvc.perform(get("/post-suggestions/sug-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("sug-001"));
+    }
+
+    @Test
+    @WithMockUser(username = "joao", roles = "USER")
+    @DisplayName("POST /post-suggestions/{id}/images — deve retornar 201 com imagem adicionada")
+    void uploadImage_authenticated_returns201() throws Exception {
+        PostSuggestionResponse response = buildSuggestion(Platform.TWITTER);
+        when(postSuggestionImageService.addImage(eq("sug-001"), any(), eq("joao")))
+                .thenReturn(response);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "poster.png",
+                "image/png",
+                "fake-image-content".getBytes()
+        );
+
+        mockMvc.perform(multipart("/post-suggestions/sug-001/images").file(file))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.images[0].format").value("png"));
+    }
+
+    @Test
+    @DisplayName("POST /post-suggestions/{id}/images — deve retornar 401 sem autenticação")
+    void uploadImage_unauthenticated_returns401() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "poster.png",
+                "image/png",
+                "fake-image-content".getBytes()
+        );
+
+        mockMvc.perform(multipart("/post-suggestions/sug-001/images").file(file))
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,6 +36,9 @@ public class PostSuggestion {
     private List<String> hashtags;
 
     private String cta;
+
+    @Builder.Default
+    private List<ImageAsset> images = new ArrayList<>();
 
     private String createdBy;
 

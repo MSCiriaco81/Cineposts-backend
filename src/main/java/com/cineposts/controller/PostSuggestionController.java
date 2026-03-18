@@ -2,6 +2,7 @@ package com.cineposts.controller;
 
 import com.cineposts.dto.request.UpdateSuggestionRequest;
 import com.cineposts.dto.response.PostSuggestionResponse;
+import com.cineposts.service.PostSuggestionImageService;
 import com.cineposts.service.PostSuggestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +22,7 @@ import java.util.List;
 public class PostSuggestionController {
 
     private final PostSuggestionService suggestionService;
+    private final PostSuggestionImageService imageService;
 
     @PostMapping("/contents/{id}/suggestions/twitter")
     @Operation(summary = "Generate a Twitter post suggestion from content")
@@ -58,5 +61,15 @@ public class PostSuggestionController {
             @RequestBody UpdateSuggestionRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(suggestionService.update(id, request, userDetails.getUsername()));
+    }
+
+    @PostMapping("/post-suggestions/{id}/images")
+    @Operation(summary = "Upload an image to a post suggestion")
+    public ResponseEntity<PostSuggestionResponse> uploadImage(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(imageService.addImage(id, file, userDetails.getUsername()));
     }
 }

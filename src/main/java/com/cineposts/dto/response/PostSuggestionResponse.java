@@ -1,5 +1,6 @@
 package com.cineposts.dto.response;
 
+import com.cineposts.model.ImageAsset;
 import com.cineposts.model.enums.Platform;
 import com.cineposts.model.enums.SuggestionStatus;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class PostSuggestionResponse {
     private String caption;
     private List<String> hashtags;
     private String cta;
+    private List<ImageAsset> images;
     private String createdBy;
     private String createdByUsername;
     private SuggestionStatus status;
